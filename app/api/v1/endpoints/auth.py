@@ -20,6 +20,16 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 security = HTTPBearer()
 
 
+# Dependency to get current user
+async def get_current_active_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """Get current authenticated user"""
+    token = credentials.credentials
+    return AuthService.get_current_user(db, token)
+
+
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: UserCreate,

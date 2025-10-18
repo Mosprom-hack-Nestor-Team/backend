@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.models import User
-from app.services.auth_service import AuthService
+from app.api.v1.endpoints.auth import get_current_active_user
 from app.services.spreadsheet_service import SpreadsheetService
 from app.spreadsheet_schemas import (
     SpreadsheetCreate, SpreadsheetUpdate, SpreadsheetInfo,
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/spreadsheets", tags=["spreadsheets"])
 @router.post("/", response_model=SpreadsheetInfo, status_code=status.HTTP_201_CREATED)
 async def create_spreadsheet(
     spreadsheet_data: SpreadsheetCreate,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Create a new spreadsheet"""
     spreadsheet = await SpreadsheetService.create_spreadsheet(spreadsheet_data, current_user)
@@ -40,7 +40,7 @@ async def create_spreadsheet(
 
 @router.get("/", response_model=SpreadsheetList)
 async def get_my_spreadsheets(
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get all spreadsheets accessible by current user"""
     spreadsheets = await SpreadsheetService.get_user_spreadsheets(current_user)
@@ -53,7 +53,7 @@ async def get_my_spreadsheets(
 @router.get("/{spreadsheet_id}", response_model=SpreadsheetDetail)
 async def get_spreadsheet(
     spreadsheet_id: str,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get spreadsheet details"""
     return await SpreadsheetService.get_spreadsheet(spreadsheet_id, current_user)
@@ -63,7 +63,7 @@ async def get_spreadsheet(
 async def update_spreadsheet(
     spreadsheet_id: str,
     update_data: SpreadsheetUpdate,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Update spreadsheet metadata"""
     spreadsheet = await SpreadsheetService.update_spreadsheet(
@@ -87,7 +87,7 @@ async def update_spreadsheet(
 @router.delete("/{spreadsheet_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_spreadsheet(
     spreadsheet_id: str,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Delete spreadsheet (owner only)"""
     await SpreadsheetService.delete_spreadsheet(spreadsheet_id, current_user)
@@ -97,7 +97,7 @@ async def delete_spreadsheet(
 async def update_cell(
     spreadsheet_id: str,
     cell_update: CellUpdate,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Update a single cell"""
     return await SpreadsheetService.update_cell(spreadsheet_id, cell_update, current_user)
@@ -107,7 +107,7 @@ async def update_cell(
 async def share_spreadsheet(
     spreadsheet_id: str,
     share_data: ShareSpreadsheet,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Share spreadsheet with another user"""
     await SpreadsheetService.share_spreadsheet(spreadsheet_id, share_data, current_user)
@@ -118,7 +118,7 @@ async def share_spreadsheet(
 async def remove_permission(
     spreadsheet_id: str,
     user_email: str,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Remove user's access to spreadsheet"""
     await SpreadsheetService.remove_permission(spreadsheet_id, user_email, current_user)

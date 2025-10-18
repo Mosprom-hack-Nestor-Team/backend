@@ -7,6 +7,7 @@ from fastapi.websockets import WebSocketState
 import json
 from datetime import datetime
 
+from app.api.v1.endpoints.auth import get_current_active_user
 from app.services.auth_service import AuthService
 from app.services.spreadsheet_service import SpreadsheetService
 from app.spreadsheet_schemas import WSCellUpdate, WSUserJoined, WSUserLeft, WSError
@@ -169,7 +170,7 @@ async def websocket_endpoint(
 @router.get("/ws/spreadsheets/{spreadsheet_id}/users")
 async def get_active_users(
     spreadsheet_id: str,
-    current_user: User = Depends(AuthService.get_current_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """Get list of users currently connected to a spreadsheet"""
     # Verify access

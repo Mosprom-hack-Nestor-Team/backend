@@ -20,9 +20,10 @@ class Settings(BaseSettings):
     # Server configuration
     HOST: str = "0.0.0.0"
     PORT: int = 7878
-    RELOAD: bool = True
+    RELOAD: bool = False
     
-    # CORS configuration
+    # CORS configuration - can be overridden via environment variable
+    # Format: JSON array like ["*"] or ["https://domain.com"]
     ALLOWED_ORIGINS: List[str] = ["*"]
     
     # Database configuration

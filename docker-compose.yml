@@ -1,38 +1,45 @@
 version: '3.8'
 
 services:
-  # Backend service - commented out for local development
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   image: mosprom-backend:latest
-  #   container_name: mosprom-backend
-  #   restart: unless-stopped
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     POSTGRES_HOST: postgres
-  #     MONGODB_HOST: mongodb
-  #     DATABASE_URL: postgresql://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD:-apppassword}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-appdb}
-  #     MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-admin123}@mongodb:27017
-  #     HOST: 0.0.0.0
-  #     PORT: 7878
-  #     RELOAD: "False"
-  #   ports:
-  #     - "7878:7878"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     mongodb:
-  #       condition: service_healthy
-  #   command: >
-  #     sh -c "until pg_isready -h $POSTGRES_HOST -p ${POSTGRES_PORT:-5432} -U $POSTGRES_USER; do echo waiting for db; sleep 2; done; exec python run.py"
-  #   volumes:
-  #     - ./logs:/app/logs
-  #     - ./static:/app/static
-  #   networks:
-  #     - hackk_network
+  # Backend service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mosprom-backend:latest
+    container_name: mosprom-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Database hosts (use service names for docker network)
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apppassword}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      MONGODB_HOST: mongodb
+      # Connection URLs (override .env for container deployment)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD:-apppassword}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-appdb}
+      MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-admin123}@mongodb:27017
+      # Server config
+      HOST: 0.0.0.0
+      PORT: 7878
+      RELOAD: "False"
+    ports:
+      - "7878:7878"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    command: >
+      sh -c "until pg_isready -h postgres -p 5432 -U ${POSTGRES_USER:-appuser}; do echo waiting for db; sleep 2; done; exec python run.py"
+    volumes:
+      - ./logs:/app/logs
+      - ./static:/app/static
+    networks:
+      - hackk_network
 
   postgres:
     image: postgres:15-alpine

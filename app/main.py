@@ -73,13 +73,19 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Set up CORS middleware - allow all origins for deployment flexibility
+    # Configure CORS to avoid issues in different environments
+    # If specific origins are provided, allow credentials with that whitelist.
+    # Otherwise, allow all origins without credentials to fully avoid CORS blocks.
+    allowed_origins = [o.strip() for o in (settings.ALLOWED_ORIGINS or []) if o and o.strip()]
+    allow_all = (not allowed_origins) or ("*" in allowed_origins)
+
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Allow all origins
-        allow_credentials=True,
+        allow_origins=["*"] if allow_all else allowed_origins,
+        allow_credentials=False if allow_all else True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     # Include API router

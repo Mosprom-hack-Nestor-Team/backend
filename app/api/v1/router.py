@@ -3,7 +3,7 @@ Main API router that includes all endpoint routers
 """
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import health, auth, spreadsheets, websocket
+from app.api.v1.endpoints import health, auth, spreadsheets, websocket, files
 
 
 api_router = APIRouter()
@@ -27,4 +27,9 @@ api_router.include_router(
 api_router.include_router(
     websocket.router,
     tags=["WebSocket"],
+)
+
+api_router.include_router(
+    files.router,
+    tags=["Files"],
 )

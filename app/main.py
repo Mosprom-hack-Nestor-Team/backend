@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
+from app.core.mongodb import MongoDB
 from app.services.auth_service import AuthService
 
 
@@ -37,13 +38,21 @@ async def lifespan(app: FastAPI):
     # Startup
     print(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION} starting up...")
     
-    # Initialize database - create tables if they don't exist
+    # Initialize PostgreSQL database - create tables if they don't exist
     try:
-        print("📊 Initializing database...")
+        print("📊 Initializing PostgreSQL database...")
         Base.metadata.create_all(bind=engine)
-        print("✅ Database initialized successfully")
+        print("✅ PostgreSQL database initialized successfully")
     except Exception as e:
-        print(f"❌ Database initialization failed: {e}")
+        print(f"❌ PostgreSQL database initialization failed: {e}")
+    
+    # Initialize MongoDB connection
+    try:
+        print("📊 Connecting to MongoDB...")
+        await MongoDB.connect_db()
+        print("✅ MongoDB connected successfully")
+    except Exception as e:
+        print(f"❌ MongoDB connection failed: {e}")
     
     # Start background task for token cleanup
     cleanup_task = asyncio.create_task(cleanup_expired_tokens_task())
@@ -53,6 +62,13 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     cleanup_task.cancel()
+    
+    # Close MongoDB connection
+    try:
+        await MongoDB.close_db()
+    except Exception as e:
+        print(f"❌ MongoDB disconnect error: {e}")
+    
     print(f"🛑 {settings.PROJECT_NAME} shutting down...")
 
 

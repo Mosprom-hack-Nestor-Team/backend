@@ -244,6 +244,50 @@ class AuthService:
         return user
 
     @staticmethod
+    async def get_current_user_from_token(token: str) -> User:
+        """
+        Get current user from access token (async version for WebSocket)
+        
+        Args:
+            token: Access token
+            
+        Returns:
+            User object
+            
+        Raises:
+            HTTPException: If token is invalid or user not found
+        """
+        from app.core.database import SessionLocal
+        
+        # Decode token
+        payload = decode_token(token)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+        
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+        
+        # Get user from database
+        db = SessionLocal()
+        try:
+            user = db.query(User).filter(User.id == int(user_id)).first()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="User not found",
+                )
+            return user
+        finally:
+            db.close()
+
+    @staticmethod
     def cleanup_expired_tokens(db: Session) -> int:
         """
         Remove expired tokens from database

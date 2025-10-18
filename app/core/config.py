@@ -33,6 +33,15 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     DATABASE_URL: str = "postgresql://appuser:apppassword@localhost:5432/appdb"
     
+    # MongoDB configuration
+    MONGO_INITDB_ROOT_USERNAME: str = "admin"
+    MONGO_INITDB_ROOT_PASSWORD: str = "admin123"
+    MONGO_INITDB_DATABASE: str = "spreadsheets"
+    MONGODB_HOST: str = "localhost"
+    MONGODB_PORT: int = 27017
+    MONGODB_URL: str = "mongodb://admin:admin123@localhost:27017"
+    MONGODB_DB_NAME: str = "spreadsheets"
+    
     # JWT configuration
     JWT_SECRET_KEY: str = "your-secret-key-change-this-in-production-min-32-chars"
     JWT_ALGORITHM: str = "HS256"
